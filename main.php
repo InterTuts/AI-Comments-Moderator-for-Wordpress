@@ -30,9 +30,6 @@ if ( is_admin() ) {
     // Initiate the class
     new MainPage();
 
-    // Get the moderator options
-    $moderator_options = get_option('ai_comments_moderator_options');
-
 } else {
 
     // Request the class for Moderator class

@@ -13,7 +13,7 @@ Author URI: https://github.com/InterTuts
 class Moderator {
 
     // Generative Language Model
-    private string $model = 'gemini-1.5-flash-latest';
+    private string $model = 'text-bison-001';
 
     // Generative Language URL
     private string $gl;
@@ -23,8 +23,13 @@ class Moderator {
      */
 	public function __construct() {
 
-        // Prepare the Generative Language URL
-        $this->gl = "https://generativelanguage.googleapis.com/v1beta/models/{$this->model}:generateContent";
+        // Prepare the Generative Language URL with the Palm 2 model
+        $this->gl = "https://generativelanguage.googleapis.com/v1beta2/models/{$this->model}:generateText";
+
+        /**
+            // This is using the Gemini model and requires to add the credit card
+            $this->gl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
+         */
 
         // Create the page with settings
 		add_action('comment_post', array( $this, 'processComment' ), 10, 3);
@@ -53,17 +58,26 @@ class Moderator {
             $rules = $moderator_options['ai_comments_moderator_conditions'];
             
             // Prepare the body data
-            $body = [
-                'contents' => [
-                    [
-                        'parts' => [
-                            [
-                                'text' => "Analyze this text \"{$comment_content}\" and tell me with Yes or No if it meets the rules described here \"{$rules}\""
+            $body = array(
+                'prompt' => array(
+                    'text' => "Analyze this text \"{$comment_content}\" and tell me with Yes or No if it meets the rules described here \"{$rules}\""
+                )
+            );
+
+            /**
+                // Prepare the body data for Gemini model
+                $body = [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                [
+                                    'text' => "Analyze this text \"{$comment_content}\" and tell me with Yes or No if it meets the rules described here \"{$rules}\""
+                                ]
                             ]
                         ]
                     ]
-                ]
-            ];
+                ];
+             */
             
             // Request arguments
             $args = array(
@@ -77,7 +91,7 @@ class Moderator {
             
             // Send the request
             $response = wp_remote_post($this->gl . '?key=' . $moderator_options['ai_comments_moderator_gemini_api_key'], $args);
-
+            
             // Check if no errors occurred
             if (!is_wp_error($response)) {
 
